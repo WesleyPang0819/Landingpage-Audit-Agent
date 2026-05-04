@@ -59,12 +59,12 @@ export function AuthProvider({ children }) {
   const updateAuthState = async (session) => {
     const currentUser = session?.user ?? null;
     setUser(currentUser);
-    
+
     if (currentUser) {
-      // Sync member profile
+      setLoading(true); // show loading while fetching profile from DB
       const profile = await ensureMemberProfile(currentUser);
       setMemberProfile(profile);
-      
+
       // Fallback: Always grant admin role to specific super-user email
       const userEmail = (currentUser.email || '').trim().toLowerCase();
       if (userEmail === 'admin123@gmail.com' || profile?.role === 'admin') {
