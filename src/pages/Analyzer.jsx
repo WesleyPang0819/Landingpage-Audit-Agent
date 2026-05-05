@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Zap, ArrowRight, Search, CheckCircle2, RefreshCcw, User, Mail, Phone 
+import {
+  Zap, ArrowRight, Search, CheckCircle2, RefreshCcw, User, Mail, Phone, Smartphone
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getExpertAudit } from '../utils/expertAudit';
+import { runBasicAudit } from '../utils/expertAudit';
 import { t, COUNTRY_CODES } from '../constants/translations';
+import InstallAppModal from '../components/InstallAppModal';
+import ExtensionInstallModal from '../components/ExtensionInstallModal';
 
 const Analyzer = ({ lang, showToast }) => {
   const curText = t[lang];
@@ -17,10 +19,34 @@ const Analyzer = ({ lang, showToast }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [leadForm, setLeadForm] = useState({ name: '', email: '', country_code: '+60', phone: '', consent: false });
   const [leadStatus, setLeadStatus] = useState('idle');
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => { 
-    setAuditParams(prev => ({ ...prev, goal: curText.goals[0] })); 
+  useEffect(() => {
+    setAuditParams(prev => ({ ...prev, goal: curText.goals[0] }));
   }, [lang, curText.goals]);
+
+  useEffect(() => {
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
+    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    if (outcome === 'accepted') setShowInstallModal(false);
+  };
 
   const handleAnalyzeClick = (e) => {
     e.preventDefault();
@@ -43,17 +69,28 @@ const Analyzer = ({ lang, showToast }) => {
     }, 800);
   };
 
-  const generateReportAndNavigate = () => {
+  const generateReportAndNavigate = async () => {
     const isEn = lang === 'en';
-    const domainName = auditParams.url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].split('.')[0] || 'Website';
-    const capName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
-    const { report, finalScore } = getExpertAudit(auditParams.goal, auditParams.audience, isEn, capName);
+    
+    // 统一调用 shared audit service
+    const auditResult = await runBasicAudit({
+      url: auditParams.url,
+      pageGoal: auditParams.goal,
+      targetAudience: auditParams.audience,
+      source: 'web_app', // PWA 与 Web App 共用此入口
+      isEn,
+      supabase
+    });
     
     const reportData = {
-      url: auditParams.url, goal: auditParams.goal, score: finalScore, 
-      audience: auditParams.audience || (isEn ? "General" : "广泛受众"),
-      auditDetails: report
+      url: auditResult.url, 
+      goal: auditResult.pageGoal, 
+      score: auditResult.overallScore, 
+      audience: auditResult.targetAudience || (isEn ? "General" : "广泛受众"),
+      auditDetails: auditResult.report,
+      pageData: auditResult.pageData // 将抓取到的真实数据透传给下游
     };
+    
     setIsAnalyzing(false);
     navigate('/report', { state: { reportData } });
   };
@@ -125,7 +162,7 @@ const Analyzer = ({ lang, showToast }) => {
           <p className="text-base md:text-lg text-slate-600 mb-8 leading-relaxed max-w-xl">
             {curText.description}
           </p>
-          
+
           <form onSubmit={handleAnalyzeClick} className="bg-white p-6 md:p-8 rounded-[32px] shadow-2xl shadow-blue-900/5 border border-slate-100 space-y-6">
             <div>
               <label className="block text-sm font-bold text-slate-900 mb-2 ml-1">{curText.urlLabel}</label>
@@ -264,15 +301,47 @@ const Analyzer = ({ lang, showToast }) => {
         </div>
       </div>
 
+      {/* 安装按钮：手机显示 PWA，桌面显示 Extension */}
+      {!isStandalone && (
+        <div className="mt-16 text-center">
+          {isMobile ? (
+            <button
+              onClick={() => setShowInstallModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm hover:shadow-md"
+            >
+              <Smartphone size={16} /> 安装 App 到桌面
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowExtensionModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm hover:shadow-md"
+            >
+              🧩 安装 Extension
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Minimalist Admin Entrance at the very bottom */}
-      <div className="mt-24 mb-12 text-center">
-        <button 
-          onClick={() => navigate('/admin')} 
+      <div className="mt-6 mb-12 text-center">
+        <button
+          onClick={() => navigate('/admin')}
           className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-300 hover:text-slate-500 transition-all duration-700"
         >
           Admin Console
         </button>
       </div>
+
+      <InstallAppModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        deferredPrompt={deferredPrompt}
+        onInstallClick={handleInstallClick}
+      />
+      <ExtensionInstallModal
+        isOpen={showExtensionModal}
+        onClose={() => setShowExtensionModal(false)}
+      />
     </div>
   );
 };

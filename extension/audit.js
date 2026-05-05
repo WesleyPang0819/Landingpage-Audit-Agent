@@ -436,7 +436,7 @@ const getTopLeaks = (scores, isEn, aud) => {
 
 // ── Main Export ───────────────────────────────────────────────
 
-export const getExpertAudit = (goal = '', audience = '', isEn = true, capName = 'Your Website', url = '', pageData = null) => {
+const getExpertAudit = (goal = '', audience = '', isEn = true, capName = 'Your Website', url = '', pageData = null) => {
   const aud    = audience || (isEn ? 'your target audience' : '目标受众');
   const domain = capName || 'Your Website';
 
@@ -721,13 +721,20 @@ export const getExpertAudit = (goal = '', audience = '', isEn = true, capName = 
 };
 
 // ── 抓取 + 审计（调用 scrape-page Edge Function）────────────────
-export const scrapeAndAudit = async (supabase, url) => {
+
+window.scrapeAndAudit = async (url) => {
   try {
-    const { data, error } = await supabase.functions.invoke('scrape-page', {
-      body: { url }
+    const res = await fetch('https://oyvumdmtimcggqzbgotc.supabase.co/functions/v1/scrape-page', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95dnVtZG10aW1jZ2dxemJnb3RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzQ4NTgsImV4cCI6MjA5MzExMDg1OH0.3eKtR-MdfLhO0NHEo2l7OOZ3AlTyEmaXiTG94VI6QKE'
+      },
+      body: JSON.stringify({ url })
     });
-    if (error || !data?.success) return null;
-    return data.data;
+    const json = await res.json();
+    if (!json.success) return null;
+    return json.data;
   } catch (e) {
     return null;
   }
@@ -738,7 +745,7 @@ export const scrapeAndAudit = async (supabase, url) => {
  * 所有的端（Web App, Extension, PWA, Admin）统一调用这个函数，
  * 内部处理抓取、容错、评分和生成统一报告的逻辑。
  */
-export const runBasicAudit = async ({ url, pageGoal, targetAudience, source, isEn = true, supabase = null }) => {
+window.runBasicAudit = async ({ url, pageGoal, targetAudience, source, isEn = true, supabase = null }) => {
   const domainName = url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].split('.')[0] || 'Website';
   const capName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
 

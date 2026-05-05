@@ -31,7 +31,7 @@ const Report = ({ lang, showToast }) => {
   // Dynamically re-generate data based on current language
   const domainName = url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].split('.')[0] || 'Website';
   const capName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
-  const { report: data, finalScore: score } = getExpertAudit(reportData.goal, reportData.audience, isEn, capName);
+  const { report: data, finalScore: score } = getExpertAudit(reportData.goal, reportData.audience, isEn, capName, reportData.url);
 
   const { requireAuth, supabase } = useAuth();
 

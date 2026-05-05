@@ -24,7 +24,7 @@ export const t = {
     nameLabel: "Full Name", emailLabel: "Work Email", phoneLabel: "Phone Number",
     getItNow: "Download Free Playbook", successTitle: "✅ Check your inbox!",
     goals: ["Collect leads", "Sell product", "Book calls", "Webinar registration", "Free download"],
-    loadingMsgs: ["Reading DOM elements...", "Scanning visual hierarchy...", "Evaluating clarity...", "Generating custom plan..."]
+    loadingMsgs: ["Scanning your page content...", "Reading DOM elements...", "Scanning visual hierarchy...", "Evaluating clarity...", "Generating custom plan..."]
   },
   zh: {
     title: "落地页审计助手", loginBtn: "登录", heroBadge: "AI 驱动的转化审计",
@@ -42,6 +42,6 @@ export const t = {
     nameLabel: "您的姓名", emailLabel: "电子邮箱", phoneLabel: "电话号码",
     getItNow: "免费下载实战手册", successTitle: "✅ 已发送，请查收邮箱！",
     goals: ["收集潜在客户", "销售产品", "预约咨询", "研讨会报名", "免费下载"],
-    loadingMsgs: ["正在读取 DOM 元素...", "扫描视觉层级...", "评估首屏清晰度...", "生成定制化改进方案..."]
+    loadingMsgs: ["正在扫描页面内容...", "正在读取 DOM 元素...", "扫描视觉层级...", "评估首屏清晰度...", "生成定制化改进方案..."]
   }
 };

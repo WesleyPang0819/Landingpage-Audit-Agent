@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landingpage Audit Agent</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <img src="icons/icon48.png" class="logo-img" alt="Logo" />
+      <span class="app-name" id="appName">落地页审计</span>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btnEn">EN</button>
+      <button class="lang-btn active" id="btnZh">中文</button>
+    </div>
+  </div>
+
+  <!-- Input Form -->
+  <div class="form-section" id="formSection">
+    <div>
+      <label id="labelUrl">落地页链接</label>
+      <input type="url" id="inputUrl" placeholder="https://yourlandingpage.com" />
+    </div>
+    <div>
+      <label id="labelGoal">主要转化目标</label>
+      <select id="inputGoal"></select>
+    </div>
+    <div>
+      <label id="labelAudience">目标受众（可选）</label>
+      <input type="text" id="inputAudience" placeholder="e.g. 忙碌的创业者" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnAnalyze">分析转化性能</button>
+      <button class="btn-secondary" id="btnReset">重置</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loadingSection" style="display:none">
+    <div class="spinner"></div>
+    <span id="loadingText">正在分析...</span>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsSection" style="display:none">
+
+    <!-- Score -->
+    <div class="score-section" id="scoreSection"></div>
+
+    <!-- Cards -->
+    <div class="results-section">
+
+      <!-- Issues -->
+      <div class="card">
+        <div class="card-header" id="headerIssues">核心转化率瓶颈</div>
+        <div class="card-body" id="issuesList"></div>
+      </div>
+
+      <!-- Quick Wins -->
+      <div class="card">
+        <div class="card-header" id="headerWins">15 分钟内可优化的点</div>
+        <div class="card-body" id="winsList"></div>
+      </div>
+
+      <!-- 7-Day Plan -->
+      <div class="card">
+        <div class="card-header" id="headerPlan">7 天优化计划</div>
+        <div class="card-body" id="planList"></div>
+      </div>
+
+      <!-- VIP Upgrade Card -->
+      <div class="card vip-card">
+        <div class="vip-bg"></div>
+        <div class="vip-content">
+          <div class="vip-badge">👑 VIP Only</div>
+          <h3 id="headerVIP">进阶 AI 文案重写</h3>
+          <p id="descVIP">解锁由大语言模型驱动的深度分析，一键重写高转化文案，挖掘深层转化瓶颈。</p>
+          <button class="btn-vip" id="btnWhatsApp">通过 WhatsApp 解锁 VIP</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Reset at bottom -->
+    <div class="bottom-reset" style="padding: 12px 16px 16px;">
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-secondary" style="flex:1" id="btnResetBottom">重新分析</button>
+        <button class="btn-secondary" style="flex:1" id="btnFullScreen">⛶ 全屏预览</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="audit.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
