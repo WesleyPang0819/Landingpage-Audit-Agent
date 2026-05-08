@@ -30,14 +30,27 @@ const Analyzer = ({ lang, showToast }) => {
   }, [lang, curText.goals]);
 
   useEffect(() => {
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
-    setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+    const updateDeviceStatus = () => {
+      setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
+      setIsMobile(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    updateDeviceStatus();
+
+    // Listen for resize to update dynamically (helpful for DevTools toggling)
+    window.addEventListener('resize', updateDeviceStatus);
+
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    
+    return () => {
+      window.removeEventListener('resize', updateDeviceStatus);
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
   }, []);
 
   const handleInstallClick = async () => {
