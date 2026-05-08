@@ -109,6 +109,20 @@ export default function Admin({ showToast }) {
     }
   };
 
+  const deleteMember = async (id) => {
+    if (!supabase) return;
+    
+    // window.confirm 被移除，直接执行删除
+    const { error, data } = await supabase.from('members').delete().eq('id', id);
+    if (error) {
+      console.error("Delete member error:", error);
+      if (showToast) showToast("Delete failed: " + error.message, 'error');
+    } else {
+      setMembers(members.filter(m => m.id !== id));
+      if (showToast) showToast("Member deleted successfully");
+    }
+  };
+
   const filteredLeads = leads.filter(l => {
     const ms = (l.email||'').toLowerCase().includes(search) || (l.name||'').toLowerCase().includes(search);
     const mf = filter === 'all' || l.status === filter || (!l.status && filter === 'pending');
@@ -319,6 +333,9 @@ export default function Admin({ showToast }) {
                             <Ban size={16}/> Block
                           </button>
                         )}
+                        <button onClick={()=>deleteMember(m.id)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold ml-1" title="Delete">
+                          <Trash2 size={16}/>
+                        </button>
                       </td>
                     </tr>
                     );
@@ -336,10 +353,15 @@ export default function Admin({ showToast }) {
                 const isVip = m.plan?.toLowerCase() === 'vip';
                 return (
                   <div key={m.id} className="p-4 space-y-3">
-                    {/* Email + ID */}
-                    <div>
-                      <div className="font-bold text-slate-900 text-sm">{m.email || 'Unknown'}</div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{m.id?.slice(0, 8)}...</div>
+                    {/* Email + ID + Delete */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-bold text-slate-900 text-sm">{m.email || 'Unknown'}</div>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{m.id?.slice(0, 8)}...</div>
+                      </div>
+                      <button onClick={()=>deleteMember(m.id)} className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors shrink-0" title="Delete Member">
+                        <Trash2 size={16}/>
+                      </button>
                     </div>
 
                     {/* Badges row */}
