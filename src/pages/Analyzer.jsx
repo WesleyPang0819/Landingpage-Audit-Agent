@@ -309,7 +309,7 @@ const Analyzer = ({ lang, showToast }) => {
               onClick={() => setShowInstallModal(true)}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm hover:shadow-md"
             >
-              <Smartphone size={16} /> 安装 App 到桌面
+              <Smartphone size={16} /> 安装应用
             </button>
           ) : (
             <button
